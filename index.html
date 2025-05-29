@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>You Got Scanned 🎯</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+    }
+    .card {
+      background: #1e1e1e;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.4);
+      max-width: 400px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      min-height: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 id="message">Checking your luck...</h1>
+  </div>
+
+  <script>
+    // Messages to randomly show
+    const messages = [
+      "🎉 Congratulations! You won nothing.",
+      "😅 Better luck next time.",
+      "💰 Pay $10 to the club.",
+      "😂 We know your device better than you do now. You can exit"
+    ];
+
+    // Pick a random message
+    const selectedMessage = messages[Math.floor(Math.random() * messages.length)];
+    document.getElementById("message").innerText = selectedMessage;
+
+    // Device type detection function
+    function detectDeviceType(ua) {
+      if (/mobile/i.test(ua)) return "Mobile";
+      if (/tablet/i.test(ua)) return "Tablet";
+      if (/iPad|Android(?!.*Mobile)/i.test(ua)) return "Tablet";
+      return "Desktop";
+    }
+
+    // Gather data
+    const userAgent = navigator.userAgent;
+    const platform = navigator.platform;
+    const deviceType = detectDeviceType(userAgent);
+    const collected = {
+      message: selectedMessage,
+      userAgent: userAgent,
+      platform: platform,
+      deviceType: deviceType,
+      scanCount: 1, // fixed since no counting
+      ip: ""
+    };
+
+    // Get IP from public API and send all data to Google Sheets
+    fetch("https://api.ipify.org?format=json")
+      .then(res => res.json())
+      .then(ipData => {
+        collected.ip = ipData.ip;
+
+        // Send POST request to your Google Apps Script URL
+        fetch("https://YOUR_GOOGLE_SCRIPT_URL_HERE", {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(collected)
+        });
+      });
+  </script>
+</body>
+</html>
